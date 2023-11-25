@@ -1,81 +1,64 @@
-﻿class Program
+﻿namespace DedicatedHostSwitch
 {
-	static class SaveFile
+	class Program
 	{
-		private static readonly FileInfo SaveFileInfo = new(Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location), "save.csv"));
-		private static string? LuaFilePath;
-		public static string[]? LuaContent;
-		static SaveFile()
+		enum UserInput { True = 1, False, Toggle, ChangePath, Exit }
+		static void Main()
 		{
-			if (!SaveFileInfo.Exists)
-				SaveFileInfo.Create();
-			if (SaveFileInfo.Length == 0)
-			{
-				while (!File.Exists(LuaFilePath))
-				{
-					Console.WriteLine("Save file is empty or Lua file doesn't exist, insert Lua file path.");
-					LuaFilePath = Console.ReadLine();
-				}
-				File.WriteAllText(SaveFileInfo.FullName, LuaFilePath);
-			}
-			LuaFilePath = File.ReadAllText(SaveFileInfo.FullName);
-			LuaContent = File.ReadAllLines(LuaFilePath);		}
-		public static void LuaSave() => File.WriteAllLines(LuaFilePath, LuaContent);
-		public static bool Save(string? path)
-		{
-			if (!File.Exists(path))
-				return false;
-			else
-			{
-				LuaFilePath = path;
-				File.WriteAllText(SaveFileInfo.FullName, LuaFilePath);
-				return true;
-			}
-		}
-	}
-	static void Main()
-	{
-		string[] Line = { @"	DedicatedHost = false,", @"	DedicatedHost = true,", "Dedicated host has been set to \"false\".", "Dedicated host has been set to \"true\"." };
-		byte MainLoop = 0;
-		bool LoadedState = SaveFile.LuaContent[11] == Line[1];
-		Console.WriteLine("Dedicated Host Switch\n1.True\n2.False\n3.Toggle\n4.Change Lua file path\n5.Exit");
-		while (MainLoop < 5)
-		{
-			while (!byte.TryParse(Console.ReadLine(), out MainLoop))
-				Console.WriteLine("Incorrect value, type again:");
+			UserInput userInput = new();
+			string[] Line = { @"	DedicatedHost = false,", @"	DedicatedHost = true,", "Dedicated host has been set to \"false\".", "Dedicated host has been set to \"true\"." }, LuaFileStructure;
+			string userString;
 
-			switch (MainLoop)
+			if (SaveFile.Empty)
 			{
-				case 1:
-					SaveFile.LuaContent[11] = Line[1];
-					SaveFile.LuaSave();
-					Console.WriteLine(Line[3]);
-					break;
-				case 2:
-					SaveFile.LuaContent[11] = Line[0];
-					SaveFile.LuaSave();
-					Console.WriteLine(Line[2]);
-					break;
-				case 3:
-					LoadedState = !LoadedState;
-					if (LoadedState)
-					{
-						SaveFile.LuaContent[11] = Line[1];
+				Console.WriteLine("Lua file path not configured, insert it:");
+				while (!File.Exists(userString = Console.ReadLine()))
+					Console.WriteLine("File with this path doesn't exist, try again:");
+				Console.WriteLine("Lua file path has been updated.");
+			}
+			LuaFile.Initialize();
+
+			ContextMenu
+
+			Console.WriteLine("Dedicated Host Switch\n1.True\n2.False\n3.Toggle\n4.Change Lua file path\n5.Exit");
+			while (userInput != UserInput.Exit)
+			{
+				while (!Enum.TryParse(Console.ReadLine(), out userInput))
+					Console.WriteLine("Incorrect value, type again:");
+
+				switch (userInput)
+				{
+					case UserInput.True:
+						LuaFile.DedicatedHost = true;
+						LuaFile.Save();
 						Console.WriteLine(Line[3]);
-					}
-					else
-					{
-						SaveFile.LuaContent[11] = Line[0];
+						break;
+					case UserInput.False:
+						LuaFile.DedicatedHost = false;
+						LuaFile.Save();
 						Console.WriteLine(Line[2]);
-					}
-					SaveFile.LuaSave();
-					break;
-				case 4:
-					Console.WriteLine("Insert new path:");
-					while (!SaveFile.Save(Console.ReadLine()))
-						Console.WriteLine("File with this path doesn't exist, try again:");
-					Console.WriteLine("Lua file path has been updated.");
-					break;
+						break;
+					case UserInput.Toggle:
+						if (LuaFile.DedicatedHost)
+						{
+							LuaFile.DedicatedHost = false;
+							Console.WriteLine(Line[3]);
+						}
+						else
+						{
+							LuaFile.DedicatedHost = true;
+							Console.WriteLine(Line[2]);
+						}
+						LuaFile.Save();
+						break;
+					case UserInput.ChangePath:
+						Console.WriteLine("Insert new path:");
+						while (!File.Exists(userString = Console.ReadLine()))
+							Console.WriteLine("File with this path doesn't exist, try again:");
+						SaveFile.Content = userString;
+						Console.WriteLine("Lua file path has been updated.");
+						break;
+				}
 			}
 		}
 	}
