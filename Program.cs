@@ -18,8 +18,6 @@
 			}
 			LuaFile.Initialize();
 
-			ContextMenu
-
 			Console.WriteLine("Dedicated Host Switch\n1.True\n2.False\n3.Toggle\n4.Change Lua file path\n5.Exit");
 			while (userInput != UserInput.Exit)
 			{
