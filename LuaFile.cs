@@ -7,12 +7,6 @@
 		{
 			get => Content[11] == @"	DedicatedHost = true,";
 			set => Content[11] = value ? @"	DedicatedHost = true," : @"	DedicatedHost = false,";
-			/*{
-				if (value)
-					Content[11] = @"	DedicatedHost = true,";
-				else
-					Content[11] = @"	DedicatedHost = false,";
-			}*/
 		}
 		static string? Path { get; set; }
 		internal static void Initialize()
